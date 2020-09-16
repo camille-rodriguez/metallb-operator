@@ -10,6 +10,9 @@ jobs:
     name: Functional test metallb
     timeout-minutes: 15
     steps:
+    - name: test ip
+      run: ip a
+      
     - name: Check out code
       uses: actions/checkout@v2
 

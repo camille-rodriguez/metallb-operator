@@ -1,14 +1,29 @@
-name: Functional test
+name: Test Suite for MetalLB
 
 on:
   - push
   - pull_request
 
 jobs:
+  lint:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Run Python code quality and lint action
+      uses: ricardochaves/python-lint@v1.3.0
+      with:
+        python-root-list: "charms"
+        use-flake8: true
+        extra-flake8-options: "--max-line-length=88 --max-complexity=10"
+
   func-test-metallb:
     runs-on: ubuntu-latest
-    name: Functional test metallb
-    timeout-minutes: 15
+    name: Functional Test MetalLB
+    timeout-minutes: 10
+    needs: lint
     steps:
     - name: Check out code
       uses: actions/checkout@v2

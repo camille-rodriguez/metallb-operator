@@ -18,10 +18,10 @@ jobs:
     
     - name: Additional MicroK8s setup
       run: |
-      sudo usermod -a -G microk8s runner
-      sudo chown -f -R runner ~/.kube
-      newgrp microk8s
-      microk8s.enable storage
+        sudo usermod -a -G microk8s runner
+        sudo chown -f -R runner ~/.kube
+        newgrp microk8s
+        microk8s.enable storage
 
     - name: Install Juju
       run: |

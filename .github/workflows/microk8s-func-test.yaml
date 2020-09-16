@@ -10,9 +10,6 @@ jobs:
     name: Functional test metallb
     timeout-minutes: 15
     steps:
-    - name: test ip
-      run: ip a
-
     - name: Check out code
       uses: actions/checkout@v2
 
@@ -56,7 +53,7 @@ jobs:
       run: |
         sudo /snap/bin/juju-wait
 
-    - name: Check if no error in juju status
+    - name: Check for errors in juju status
       run: |  
         sudo juju status 2>&1 | tee tmp/juju-status-metallb.txt
         if [[ $(juju status | grep 'error\|blocked') ]]; then exit 1; else echo "No errors or blocked status detected."; fi
@@ -75,7 +72,7 @@ jobs:
 
     - name: Curl service
       run: |
-         if curl --fail `kubectl get service/microbot-lb --no-headers| awk '{print$4}'`; then "curl successfull"; else exit 1; fi      
+         if curl --fail `kubectl get service/microbot-lb --no-headers| awk '{print$4}'`; then echo "curl successfull"; else exit 1; fi      
 
     - name: Upload Artifacts
       if: ${{ always() }}

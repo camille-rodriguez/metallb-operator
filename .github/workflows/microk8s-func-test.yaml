@@ -12,7 +12,7 @@ jobs:
     steps:
     - name: test ip
       run: ip a
-      
+
     - name: Check out code
       uses: actions/checkout@v2
 
@@ -50,7 +50,7 @@ jobs:
         sudo juju add-model metallb-system
         sudo juju deploy ./metallb-controller.charm
         sudo juju deploy ./metallb-speaker.charm
-        sudo juju config metallb-controller iprange="10.152.183.240-10.152.183.250"
+        sudo juju config metallb-controller iprange="10.1.240.240-10.1.240.241"
     
     - name: Wait for stable environment
       run: |

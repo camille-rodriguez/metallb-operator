@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Functional test metallb
     steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
     - name: Install MicroK8s with microk8s-action
       uses: balchua/microk8s-actions@v0.1.2
       with:
@@ -31,8 +34,8 @@ jobs:
 
     - name: Build charms
       run: |
-        charmcraft build --from ../charms/metallb-controller
-        charmcraft build --from ../charms/metallb-speaker
+        charmcraft build --from charms/metallb-controller
+        charmcraft build --from charms/metallb-speaker
 
     - name: Deploy MetalLB
       run: |

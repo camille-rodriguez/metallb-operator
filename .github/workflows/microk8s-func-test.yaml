@@ -20,14 +20,28 @@ jobs:
       run: |
         sudo microk8s.enable storage
 
-    - name: Install Juju
+    - name: Install dependencies
       run: |
         sudo snap install juju --classic
+        sudo snap install charmcraft
+
+    - name: Bootstrap MicroK8s with Juju
         sudo juju bootstrap microk8s microk8s
-    
+
+    - name: Build charms
+      run: |
+        charmcraft build --from charms/metallb-controller
+        charmcraft build --from charms/metallb-speaker
+
     - name: Deploy MetalLB
       run: |
-        juju add-model metallb-system
-        juju status
+        sudo juju add-model metallb-system
+        sudo juju deploy metallb-controller.charm
+        sudo juju deploy metallb-speaker.charm
+
+    - name: Check pods status
+      run: |
+        kubectl get pods -n metallb-system
+
 
 

@@ -7,7 +7,7 @@ on:
 jobs:
   func-test-metallb:
     runs-on: ubuntu-latest
-    name: Setup infra
+    name: Functional test metallb
     steps:
     - name: Install MicroK8s with microk8s-action
       uses: balchua/microk8s-actions@v0.1.2
@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo snap install juju --classic
-        sudo snap install charmcraft
+        sudo snap install charmcraft --beta
 
     - name: Bootstrap MicroK8s with Juju
       run: |

@@ -17,6 +17,7 @@ jobs:
       run: |
         sudo snap install juju --classic
         sudo snap install charmcraft --beta
+        sudo apt-get install python3-setuptools
         pip3 install juju-wait
 
     - name: Build charms

@@ -6,7 +6,7 @@ on:
 
 jobs:
   lint:
-    name: Check Formatting
+    name: Check pep8 formatting
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
@@ -17,11 +17,16 @@ jobs:
       with:
         python-root-list: "charms"
         use-flake8: true
+        use-pylint: false
+        use-pycodestyle: false
+        use-black: false
+        use-mypy: false
+        use-isort: false
         extra-flake8-options: "--max-line-length=88 --max-complexity=10"
 
   func-test-metallb:
     runs-on: ubuntu-latest
-    name: Functional Test MetalLB
+    name: Functional test MetalLB
     timeout-minutes: 10
     needs: lint
     steps:

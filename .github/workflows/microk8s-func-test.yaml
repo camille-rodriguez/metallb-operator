@@ -27,8 +27,8 @@ jobs:
     name: Deploy application
     steps:
     - name: Deploy MetalLB
-        run: |
-          juju add-model metallb-system
-          juju status
+      run: |
+        juju add-model metallb-system
+        juju status
 
 

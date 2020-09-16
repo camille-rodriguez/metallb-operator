@@ -12,6 +12,11 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
+    - name: Install dependencies
+      run: |
+        sudo snap install juju --classic
+        sudo snap install charmcraft --beta
+
     - name: Build charms
       run: |
         charmcraft build --from charms/metallb-controller
@@ -28,16 +33,9 @@ jobs:
       run: |
         sudo microk8s.enable storage
 
-    - name: Install dependencies
-      run: |
-        sudo snap install juju --classic
-        sudo snap install charmcraft --beta
-
     - name: Bootstrap MicroK8s with Juju
       run: |
         sudo juju bootstrap microk8s microk8s
-
-    
 
     - name: Deploy MetalLB
       run: |
@@ -52,6 +50,7 @@ jobs:
   job-2-test:
     runs-on: ubuntu-latest
     name: dummy test
+    needs: func-test-metallb
     steps:
     - name: Check if previous job output is available here
       run: sudo juju status

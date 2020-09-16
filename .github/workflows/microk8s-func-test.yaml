@@ -67,8 +67,8 @@ jobs:
         kubectl get all 2>&1 | tee tmp/microbot-status.txt
 
     - name: Upload Artifacts
-        if: ${{ always() }}
+        if: always
       uses: actions/upload-artifact@v2
       with:
-        name: status-artifacts
+        name: test-run-artifacts
         path: tmp

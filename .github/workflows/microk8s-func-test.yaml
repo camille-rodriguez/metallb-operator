@@ -31,8 +31,8 @@ jobs:
 
     - name: Build charms
       run: |
-        charmcraft build --from charms/metallb-controller
-        charmcraft build --from charms/metallb-speaker
+        charmcraft build --from ../charms/metallb-controller
+        charmcraft build --from ../charms/metallb-speaker
 
     - name: Deploy MetalLB
       run: |

@@ -1,4 +1,4 @@
-name: Functional test for MetalLB Operator
+name: Functional test
 
 on:
   - push
@@ -17,7 +17,7 @@ jobs:
         dns: 'true'
     
     - name: Additional MicroK8s setup
-      run: microk8s.enable storage
+      run: sudo microk8s.enable storage
 
     - name: Install Juju
       run: |

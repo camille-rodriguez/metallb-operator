@@ -12,6 +12,11 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
+    - name: Build charms
+          run: |
+            charmcraft build --from charms/metallb-controller
+            charmcraft build --from charms/metallb-speaker
+
     - name: Install MicroK8s with microk8s-action
       uses: balchua/microk8s-actions@v0.1.2
       with:
@@ -32,20 +37,23 @@ jobs:
       run: |
         sudo juju bootstrap microk8s microk8s
 
-    - name: Build charms
-      run: |
-        charmcraft build --from charms/metallb-controller
-        charmcraft build --from charms/metallb-speaker
+    
 
     - name: Deploy MetalLB
       run: |
         sudo juju add-model metallb-system
-        sudo juju deploy metallb-controller.charm
-        sudo juju deploy metallb-speaker.charm
+        sudo juju deploy ./metallb-controller.charm
+        sudo juju deploy ./metallb-speaker.charm
 
     - name: Check pods status
       run: |
         kubectl get pods -n metallb-system
 
+  job-2-test:
+    runs-on: ubuntu-latest
+    name: dummy test
+    steps:
+    - name: Check if previous job output is available here
+      run: sudo juju status
 
 

@@ -8,6 +8,7 @@ jobs:
   func-test-metallb:
     runs-on: ubuntu-latest
     name: Functional test metallb
+    timeout-minutes: 15
     steps:
     - name: Check out code
       uses: actions/checkout@v2
@@ -16,6 +17,7 @@ jobs:
       run: |
         sudo snap install juju --classic
         sudo snap install charmcraft --beta
+        pip3 install juju-wait
 
     - name: Build charms
       run: |
@@ -42,17 +44,22 @@ jobs:
         sudo juju add-model metallb-system
         sudo juju deploy ./metallb-controller.charm
         sudo juju deploy ./metallb-speaker.charm
+        sudo juju config metallb-controller iprange="10.152.183.240-10.152.183.250"
+    
+    - name: Wait for stable environment
+      run: |
+        juju wait
 
     - name: Check pods status
       run: |
         kubectl get pods -n metallb-system
 
-  job-2-test:
-    runs-on: ubuntu-latest
-    name: dummy test
-    needs: func-test-metallb
-    steps:
-    - name: Check if previous job output is available here
-      run: sudo juju status
-
+    - name: Deploy microbot
+      run: |
+        sudo juju deploy ./docs/example-microbot-lb.yaml
+        juju wait
+      
+    - name: Check availability of service
+      run: |
+        kubectl get all
 

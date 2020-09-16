@@ -24,8 +24,6 @@ jobs:
         sudo snap install juju --classic
         juju bootstrap microk8s microk8s
     
-    name: Deploy application
-    steps:
     - name: Deploy MetalLB
       run: |
         juju add-model metallb-system

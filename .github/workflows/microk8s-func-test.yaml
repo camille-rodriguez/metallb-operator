@@ -49,7 +49,14 @@ jobs:
     
     - name: Wait for stable environment
       run: |
-        juju wait
+        sudo juju wait
+        sudo juju status > juju-status-metallb.txt
+
+    - name: Upload juju status to Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: juju-status-metallb
+        path: juju-status-metallb.txt
 
     - name: Check pods status
       run: |
@@ -58,7 +65,7 @@ jobs:
     - name: Deploy microbot
       run: |
         sudo juju deploy ./docs/example-microbot-lb.yaml
-        juju wait
+        sudo juju wait
       
     - name: Check availability of service
       run: |

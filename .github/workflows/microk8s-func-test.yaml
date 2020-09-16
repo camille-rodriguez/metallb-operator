@@ -62,9 +62,13 @@ jobs:
       run: |
         kubectl apply -f ./docs/example-microbot-lb.yaml
       
-    - name: Check availability of service
+    - name: Check availability of microbot service
       run: |
         kubectl get all 2>&1 | tee tmp/microbot-status.txt
+
+    - name: Curl service
+      run: |
+         if curl --fail`kubectl get service/microbot-lb --no-headers| awk '{print$4}'`; then "curl succesfull"; else exit 1; fi      
 
     - name: Upload Artifacts
       if: ${{ always() }}

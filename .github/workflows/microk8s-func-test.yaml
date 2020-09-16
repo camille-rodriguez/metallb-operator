@@ -1,0 +1,34 @@
+name: Functional test for MetalLB Operator
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  test metallb:
+    runs-on: ubuntu-latest
+    name: Setup infra
+    steps:
+    - name: Install MicroK8s with microk8s-action
+      uses: balchua/microk8s-actions@v0.1.2
+      with:
+        channel: '1.18/stable'
+        rbac: 'false'
+        dns: 'true'
+    
+    - name: Additional MicroK8s setup
+      run: microk8s.enable storage
+
+    - name: Install Juju
+      run: |
+        sudo snap install juju --classic
+        juju bootstrap microk8s microk8s
+    
+    name: Deploy application
+    steps:
+    - name: Deploy MetalLB
+        run: |
+          juju add-model metallb-system
+          juju status
+
+

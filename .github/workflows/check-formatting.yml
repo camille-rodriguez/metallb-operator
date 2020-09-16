@@ -8,10 +8,8 @@ jobs:
   build:
     name: Check Formatting
     runs-on: ubuntu-latest
-
     steps:
     - name: Check out code
       uses: actions/checkout@v2
     - name: run tox lint
-      run: |
-        tox -e lint
+      run: ../tox -e lint

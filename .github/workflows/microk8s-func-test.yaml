@@ -1,7 +1,6 @@
 name: Test Suite for MetalLB
 
 on:
-  - push
   - pull_request
 
 jobs:

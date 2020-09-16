@@ -26,7 +26,8 @@ jobs:
         sudo snap install charmcraft
 
     - name: Bootstrap MicroK8s with Juju
-        run: sudo juju bootstrap microk8s microk8s
+      run: |
+        sudo juju bootstrap microk8s microk8s
 
     - name: Build charms
       run: |

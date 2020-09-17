@@ -33,7 +33,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pip install tox
+        pip install tox tox-gh-actions
 
     - name: run tox -e unit
       run: |

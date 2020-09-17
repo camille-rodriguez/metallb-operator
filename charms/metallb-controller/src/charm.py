@@ -11,6 +11,7 @@ from ops.model import (
     ActiveStatus,
     BlockedStatus,
     MaintenanceStatus,
+    WaitingStatus,
 )
 
 import utils

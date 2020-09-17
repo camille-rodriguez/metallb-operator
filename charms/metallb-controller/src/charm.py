@@ -75,7 +75,7 @@ class MetallbControllerCharm(CharmBase):
                 BlockedStatus("An error occured during init. Please check the logs.")
             return
 
-        response = utils.bind_role_with_api(
+        response = utils.create_namespaced_role_binding_with_api(
             name='config-watcher',
             namespace=self._stored.namespace,
             labels={'app': 'metallb'},

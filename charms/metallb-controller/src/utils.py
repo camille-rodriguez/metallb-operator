@@ -137,8 +137,8 @@ def delete_namespaced_role_with_api(name, namespace):
                               "->delete_namespaced_role.")
 
 
-def bind_role_with_api(name, namespace, labels, subject_name,
-                       subject_kind='ServiceAccount'):
+def create_namespaced_role_binding_with_api(name, namespace, labels, subject_name,
+                                            subject_kind='ServiceAccount'):
     """Bind namespaced role to subject."""
     # Using API because of bug https://bugs.launchpad.net/juju/+bug/1896076
     logging.info('Creating role binding with K8s API')

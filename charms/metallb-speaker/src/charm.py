@@ -89,7 +89,7 @@ class MetallbSpeakerCharm(CharmBase):
                 BlockedStatus("An error occured during init. Please check the logs.")
             return
 
-        response = utils.bind_role_with_api(
+        response = utils.create_namespaced_role_binding_with_api(
             name='pod-lister',
             namespace=self._stored.namespace,
             labels={'app': 'metallb'},

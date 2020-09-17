@@ -24,7 +24,7 @@ jobs:
         extra-flake8-options: "--max-line-length=88 --max-complexity=10"
 
   unit-test-metallb-controller:
-    name: Unit tests MetalLB controller
+    name: Unit tests for charm metallb-controller
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -43,12 +43,33 @@ jobs:
       run: |
         cd charms/metallb-controller
         tox -e unit
+  
+  unit-test-metallb-speaker:
+    name: Unit tests for charm metallb-speaker
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.7, 3.8]
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install dependencies
+      run: |
+        pip install tox
+    - name: Run unit tests with tox
+      run: |
+        cd charms/metallb-speaker
+        tox -e unit
 
   func-test-metallb:
     runs-on: ubuntu-latest
     name: Functional test MetalLB
     timeout-minutes: 10
-    needs: [lint, unit-test-metallb-controller]
+    needs: [lint, unit-test-metallb-controller, unit-test-metallb-speaker]
     steps:
     - name: Check out code
       uses: actions/checkout@v2

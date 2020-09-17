@@ -1,7 +1,6 @@
 name: Test Suite for MetalLB
 
 on:
-  - push
   - pull_request
 
 jobs:
@@ -38,7 +37,7 @@ jobs:
     - name: run tox -e unit
       run: |
         cd charms/metallb-controller
-        tox -e unit
+        /usr/bin/tox -e unit
 
   func-test-metallb:
     runs-on: ubuntu-latest

@@ -26,18 +26,23 @@ jobs:
   unit-test-metallb-controller:
     name: Unit tests MetalLB controller
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.7, 3.8]
     steps:
     - name: Check out code
       uses: actions/checkout@v2
-    
+    - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
     - name: Install dependencies
       run: |
-        pip install tox tox-gh-actions
-
-    - name: run tox -e unit
+        pip install tox
+    - name: Run unit tests with tox
       run: |
         cd charms/metallb-controller
-        /usr/bin/tox -e unit
+        tox -e unit
 
   func-test-metallb:
     runs-on: ubuntu-latest

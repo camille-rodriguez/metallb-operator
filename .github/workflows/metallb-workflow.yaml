@@ -1,6 +1,7 @@
 name: Test Suite for MetalLB
 
 on:
+  - push
   - pull_request
 
 jobs:
@@ -23,11 +24,27 @@ jobs:
         use-isort: false
         extra-flake8-options: "--max-line-length=88 --max-complexity=10"
 
+  unit-test-metallb-controller:
+    name: Unit tests MetalLB controller
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    
+    - name: Install dependencies
+      run: |
+        pip install tox
+
+    - name: run tox -e unit
+      run: |
+        cd charms/metallb-controller
+        tox -e unit
+
   func-test-metallb:
     runs-on: ubuntu-latest
     name: Functional test MetalLB
     timeout-minutes: 10
-    needs: lint
+    needs: [lint, unit-test-metallb-controller]
     steps:
     - name: Check out code
       uses: actions/checkout@v2

@@ -22,10 +22,12 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: metallb-controller-operator
-  namespace: metallb
+  # change namespace name according to your environment
+  namespace: metallb-system
 - kind: ServiceAccount
   name: metallb-speaker-operator
-  namespace: metallb
+  # change namespace name according to your environment
+  namespace: metallb-system
 roleRef:
   kind: ClusterRole
   name: use-k8s-api

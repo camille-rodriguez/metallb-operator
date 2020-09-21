@@ -114,7 +114,7 @@ jobs:
     - name: Check for errors in juju status
       run: |  
         sudo juju status 2>&1 | tee tmp/juju-status-metallb.txt
-        if [[ $(juju status | grep 'error\|blocked') ]];
+        if [[ $(sudo juju status | grep 'error\|blocked') ]];
         then exit 1;
         else echo "No errors or blocked status detected.";
         fi

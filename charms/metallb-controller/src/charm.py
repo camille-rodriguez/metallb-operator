@@ -3,6 +3,7 @@
 
 import logging
 import os
+import sys
 
 from oci_image import OCIImageResource, OCIImageResourceError
 from ops.charm import CharmBase
@@ -43,7 +44,6 @@ class MetallbControllerCharm(CharmBase):
 
     def _on_config_changed(self, event):
         if not self._stored.started:
-            event.defer()
             return
         self._stored.configured = False
         self.model.unit.status = MaintenanceStatus("Configuring pod")
@@ -64,7 +64,9 @@ class MetallbControllerCharm(CharmBase):
         if not response:
             self.model.unit.status = \
                 BlockedStatus("An error occured during init. Please check the logs.")
-            return
+            sys.exit(1)
+            # event.defer()
+            # return
 
         response = utils.create_namespaced_role_with_api(
             name='config-watcher',
@@ -76,7 +78,9 @@ class MetallbControllerCharm(CharmBase):
         if not response:
             self.model.unit.status = \
                 BlockedStatus("An error occured during init. Please check the logs.")
-            return
+            sys.exit(1)
+            # event.defer()
+            # return
 
         response = utils.create_namespaced_role_binding_with_api(
             name='config-watcher',
@@ -87,7 +91,9 @@ class MetallbControllerCharm(CharmBase):
         if not response:
             self.model.unit.status = \
                 BlockedStatus("An error occured during init. Please check the logs.")
-            return
+            sys.exit(1)
+            # event.defer()
+            # return
 
         self.model.unit.status = ActiveStatus("Ready")
         self._stored.started = True

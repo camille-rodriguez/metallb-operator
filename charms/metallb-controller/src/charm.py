@@ -5,6 +5,7 @@ import logging
 import os
 
 from oci_image import OCIImageResource, OCIImageResourceError
+
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main

@@ -67,13 +67,13 @@ class MetallbSpeakerCharm(CharmBase):
             name='config-watcher',
             namespace=self._stored.namespace,
             labels={'app': 'metallb'},
-            subject_name='speaker'
+            subject_name='metallb-speaker'
         )
         utils.create_namespaced_role_binding_with_api(
             name='pod-lister',
             namespace=self._stored.namespace,
             labels={'app': 'metallb'},
-            subject_name='speaker'
+            subject_name='metallb-speaker'
         )
 
         self.model.unit.status = ActiveStatus("Ready")
@@ -86,22 +86,22 @@ class MetallbSpeakerCharm(CharmBase):
         utils.delete_pod_security_policy_with_api(name='speaker')
         utils.delete_namespaced_role_binding_with_api(
             name='config-watcher',
-            namespace=self._stored.namespace
+            namespace=self.stored.namespace
         )
         utils.delete_namespaced_role_with_api(
             name='config-watcher',
-            namespace=self._stored.namespace
+            namespace=self.stored.namespace
         )
         utils.delete_namespaced_role_binding_with_api(
             name='pod-lister',
-            namespace=self._stored.namespace
+            namespace=self.stored.namespace
         )
         utils.delete_namespaced_role_with_api(
             name='pod-lister',
-            namespace=self._stored.namespace
+            namespace=self.stored.namespace
         )
         self.model.unit.status = ActiveStatus("Removing extra config done.")
-        self._stored.started = False
+        self.stored.started = False
 
     def set_pod_spec(self):
         """Set pod spec."""

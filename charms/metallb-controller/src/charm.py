@@ -70,7 +70,7 @@ class MetallbControllerCharm(CharmBase):
             name='config-watcher',
             namespace=self._stored.namespace,
             labels={'app': 'metallb'},
-            subject_name='controller'
+            subject_name='metallb-controller'
         )
 
         self.model.unit.status = ActiveStatus("Ready")

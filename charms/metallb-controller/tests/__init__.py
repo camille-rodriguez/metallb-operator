@@ -1,7 +1,8 @@
 """Init mocking for unit tests."""
 
-import mock
 import sys
+
+import mock
 
 sys.path.append('src')
 

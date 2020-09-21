@@ -87,8 +87,8 @@ jobs:
         rbac: 'false'
         dns: 'true'
         storage: 'true'
-    - name: Wait 10s for MicroK8s to be ready
-      run: sleep 10
+    - name: Wait 15s for MicroK8s to be ready
+      run: sleep 15
     - name: Bootstrap MicroK8s with Juju
       run: sudo juju bootstrap microk8s microk8s
     - name: Deploy MetalLB
@@ -150,8 +150,8 @@ jobs:
         rbac: 'true'
         dns: 'true'
         storage: 'true'
-    - name: Wait 10s for MicroK8s to be ready
-      run: sleep 10
+    - name: Wait 15s for MicroK8s to be ready
+      run: sleep 15
     - name: Bootstrap MicroK8s with Juju
       run: sudo juju bootstrap microk8s microk8s
     - name: Deploy MetalLB

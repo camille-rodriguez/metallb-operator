@@ -60,11 +60,6 @@ jobs:
     - name: Apply RBAC rules for operator pods
       run: sudo microk8s.kubectl apply -f docs/rbac-permissions-controller.yaml
 
-    - name: Resolve errored units
-      run: |
-        sudo juju resolve metallb-controller/0
-        sudo juju resolve metallb-speaker/0
-
     - name: Wait for stable environment
       run: |
         sudo /snap/bin/juju-wait

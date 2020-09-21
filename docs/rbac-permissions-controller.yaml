@@ -1,7 +1,17 @@
 # If RBAC is enabled in the cluster, then the operator pod for both
 # metallb-controller and metallb-speaker need to be granted permission to # use the K8s API for some specific actions. 
-# This step is not automated because once bug LP# is fixed, it will no
+# This step is not automated because once bug LP:1896076 and LP:1886694 are fixed, it will no
 # longer be necessary to use the K8s API.
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: use-k8s-api-psp
+rules:
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  verbs: ["create", "delete"]
+
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -13,7 +23,7 @@ rules:
   verbs: ["create", "delete"]
 - apiGroups: [""]
   resources: ["configmaps"]
-  verbs: ["get", "list", "watch"]  
+  verbs: ["get", "list", "watch"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

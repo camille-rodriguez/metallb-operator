@@ -3,7 +3,6 @@
 
 import logging
 import os
-import sys
 
 from oci_image import OCIImageResource, OCIImageResourceError
 from ops.charm import CharmBase

@@ -34,6 +34,9 @@ jobs:
         dns: 'true'
         storage: 'true'
 
+    - name: Wait 10s for MicroK8s to be ready
+      run: sleep 10
+
     - name: Bootstrap MicroK8s with Juju
       run: |
         sudo juju bootstrap microk8s microk8s
@@ -43,7 +46,7 @@ jobs:
         sudo juju add-model metallb-system
         sudo juju deploy ./metallb-controller.charm --resource metallb-controller-image='metallb/controller:v0.9.3'
         sudo juju deploy ./metallb-speaker.charm --resource metallb-speaker-image='metallb/speaker:v0.9.3'
-        sudo juju config metallb-controller iprange="10.1.240.240-10.1.240.241"
+        sudo juju config metallb-controller iprange="10.1.240.241-10.1.240.242"
     
     - name: Wait for stable environment
       run: |
@@ -51,7 +54,7 @@ jobs:
 
     - name: Confirm failure without RBAC rules
       run: |
-        sudo juju status 2>&1 | tee tmp/juju-status-metallb.txt
+        sudo juju status 2>&1 | tee tmp/juju-status-metallb-1.txt
         if [[ $(sudo juju status | grep 'error\|blocked') ]];
         then echo "Deployment failed as expected.";
         else exit 1;
@@ -66,7 +69,7 @@ jobs:
 
     - name: Check for errors in juju status
       run: |  
-        sudo juju status 2>&1 | tee tmp/juju-status-metallb.txt
+        sudo juju status 2>&1 | tee tmp/juju-status-metallb-2.txt
         if [[ $(sudo juju status | grep 'error\|blocked') ]];
         then exit 1;
         else echo "No errors or blocked status detected.";

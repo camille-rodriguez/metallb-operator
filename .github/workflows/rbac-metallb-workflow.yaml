@@ -1,4 +1,4 @@
-name: Test Suite for MetalLB
+name: Extra func test with RBAC enabled
 
 on:
   - pull_request

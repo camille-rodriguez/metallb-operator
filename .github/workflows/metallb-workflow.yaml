@@ -64,7 +64,7 @@ jobs:
 
   func-test-metallb:
     runs-on: ubuntu-latest
-    name: Functional test MetalLB
+    name: Simple func test
     timeout-minutes: 10
     needs: [lint, unit-test-metallb-controller, unit-test-metallb-speaker]
     steps:
@@ -88,6 +88,8 @@ jobs:
         rbac: 'false'
         dns: 'true'
         storage: 'true'
+    - name: Wait 10s for MicroK8s to be ready
+      run: sleep 10
     - name: Bootstrap MicroK8s with Juju
       run: sudo juju bootstrap microk8s microk8s
     - name: Deploy MetalLB

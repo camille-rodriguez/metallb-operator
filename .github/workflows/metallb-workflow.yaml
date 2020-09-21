@@ -66,7 +66,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Simple func test
     timeout-minutes: 10
-    needs: [lint, unit-test-metallb-controller, unit-test-metallb-speaker]
     steps:
     - name: Check out code
       uses: actions/checkout@v2
@@ -130,7 +129,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Func test with RBAC enabled
     timeout-minutes: 10
-    needs: [lint, unit-test-metallb-controller, unit-test-metallb-speaker]
     steps:
     - name: Check out code
       uses: actions/checkout@v2

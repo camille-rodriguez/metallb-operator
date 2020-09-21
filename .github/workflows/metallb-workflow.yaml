@@ -124,7 +124,7 @@ jobs:
         name: test-run-artifacts
         path: tmp
 
-func-test-rbac-metallb:
+  func-test-rbac-metallb:
     runs-on: ubuntu-latest
     name: Func test with RBAC enabled
     timeout-minutes: 10

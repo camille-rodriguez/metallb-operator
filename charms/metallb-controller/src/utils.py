@@ -189,7 +189,7 @@ def delete_namespaced_role_binding_with_api(name, namespace):
 
 def _random_secret(length):
     letters = string.ascii_letters
-    result_str = ''.join(random.choice(letters) for i in range(length))
+    result_str = ''.join(random.SystemRandom().choice(letters) for i in range(length))
     return result_str
 
 

@@ -184,6 +184,8 @@ jobs:
       run: |
         sudo microk8s kubectl get roles -A | tee tmp/microk8s-get-roles.txt
         sudo microk8s kubectl get rolebindings -A | tee tmp/microk8s-get-roles-bindings.txt
+        sudo microk8s kubectl get clusterroles -A | tee tmp/microk8s-get-clusterroles.txt
+        sudo microk8s kubectl get clusterrolebindings -A | tee tmp/microk8s-get-cluster-roles-bindings.txt
     - name: Upload debug artifacts
       if: ${{ failure() }}
       uses: actions/upload-artifact@v2

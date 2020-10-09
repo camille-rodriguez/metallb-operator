@@ -179,6 +179,11 @@ jobs:
     - name: Collect Juju logs for metallb-speaker
       if: ${{ failure() }}
       run: sudo juju debug-log --replay --no-tail -i metallb-speaker | tee tmp/unit-metallb-speaker-0.log
+    - name : Collect microk8s roles and rolebindings
+      if: ${{ failure() }}
+      run: |
+        sudo microk8s kubectl get roles -A | tee tmp/microk8s-get-roles.txt
+        sudo microk8s kubectl get rolebindings -A | tee tmp/microk8s-get-roles-bindings.txt
     - name: Upload debug artifacts
       if: ${{ failure() }}
       uses: actions/upload-artifact@v2

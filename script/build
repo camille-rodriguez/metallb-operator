@@ -1,10 +1,16 @@
 #!/bin/bash
 
-set -x
+set -e
 
 export PATH=/snap/bin:$PATH
 
-mkdir -p "$CHARM_BUILD_DIR/$CHARM"
-CHARM_PATH="$(realpath "charms/$CHARM")"
-(cd "$CHARM_BUILD_DIR" && charmcraft build -f "$CHARM_PATH")
-unzip -q "$CHARM_BUILD_DIR/$CHARM.charm" -d "$CHARM_BUILD_DIR/$CHARM"
+mkdir -p "$CHARM_BUILD_DIR"
+
+CHARM_SRC="$(realpath "charms/$CHARM")"
+
+echo "Building $CHARM..."
+(cd "$CHARM_BUILD_DIR" && "charmcraft" build -f "$CHARM_SRC" 2>&1) | sed -e "s,in ',in '$CHARM_BUILD_DIR/,"
+build_exit_code=${PIPESTATUS[0]}
+if [[ $build_exit_code != 0 ]]; then
+    exit "$build_exit_code"
+fi

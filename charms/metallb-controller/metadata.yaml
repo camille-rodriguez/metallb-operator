@@ -12,15 +12,12 @@ summary: |
   It must be deployed with its counterpart, metallb-speaker, which speaks the protocol
   of your choice to make the services reachable.
 
-series:
+platforms:
   - kubernetes
 
 tags:
   - kubernetes
   - metallb
-
-deployment:
-  type: stateless
 
 resources:
   metallb-controller-image:

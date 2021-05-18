@@ -2,6 +2,7 @@ name: metallb-controller
 description: |
   This charm deploys MetalLB controller in a Kubernetes model, which provides 
   a software defined load balancer. 
+
 summary: |
   MetalLB offers a software network load balancing implementation that allows for
   LoadBalancing services in Kubernetes. It is a young open-source project that could
@@ -10,15 +11,23 @@ summary: |
   The controller is the cluster-wide controller that handles IP address assignments.
   It must be deployed with its counterpart, metallb-speaker, which speaks the protocol
   of your choice to make the services reachable.
+
 series:
   - kubernetes
+
 tags:
   - kubernetes
   - metallb
+
 deployment:
   type: stateless
+
 resources:
   metallb-controller-image:
     type: oci-image
     description: upstream docker image for metallb-controller
     upstream-source: 'metallb/controller:v0.9.3'
+
+containers:
+  metallb-controller:
+    resource: metallb-controller-image

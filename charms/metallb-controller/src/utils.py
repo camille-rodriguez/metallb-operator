@@ -219,14 +219,14 @@ def delete_namespaced_role_binding_with_api(name, namespace):
             logging.exception("Exception when calling RbacAuthorizationV1Api"
                               "->delete_namespaced_role_binding.")
 
-def create_config_map(namespace, iprange_map):
+def create_config_map(name, namespace, iprange_map):
     """Create the metallb controller config map with K8s API"""
     logging.info('Creating config map with K8s API')
     _load_kube_config()
 
     body = client.V1ConfigMap(
         metadata=client.V1ObjectMeta(
-            name="config",
+            name=name,
             namespace=namespace,
         ),
         kind= "ConfigMap",
@@ -237,12 +237,48 @@ def create_config_map(namespace, iprange_map):
         try:
             api_instance.create_namespaced_config_map(namespace, body, pretty=True)
         except ApiException as err:
-            if err.status == 409:
-                # ignore "already exists" errors so that we can recover from
-                # partially failed setups
-                return
-            else:
                 raise
+
+def patch_config_map(name, namespace, iprange_map):
+    """Update the metallb controller config map with K8s API"""
+    logging.info('Updating config map with K8s API')
+    _load_kube_config()
+
+    body = client.V1ConfigMap(
+        metadata=client.V1ObjectMeta(
+            name=name,
+            namespace=namespace,
+        ),
+        kind= "ConfigMap",
+        data={ "config": iprange_map }
+    )
+    logging.debug(body)
+    with client.ApiClient() as api_client:
+        api_instance = client.CoreV1Api(api_client)
+        try:
+            api_instance.patch_namespaced_config_map(name, namespace, body, pretty=True)
+        except ApiException as err:
+            raise
+
+def set_config_map(name, namespace, iprange_map):
+    """Check if config map exists and runs either create or patch depending on status."""
+    logging.info('Listing config maps...')
+    _load_kube_config()
+    patched = False
+    with client.ApiClient() as api_client:
+        api_instance = client.CoreV1Api(api_client)
+        try:
+            api_response = api_instance.list_namespaced_config_map(namespace, pretty=True).to_dict()
+            logging.debug(api_response)
+            for item in api_response["items"]:
+                if name in item["metadata"]["name"]:
+                    patch_config_map(name, namespace, iprange_map)
+                    patched = True
+            if not patched:
+                create_config_map(name, namespace, iprange_map)
+        except ApiException as err:
+            raise
+
 
 
 def _random_secret(length):

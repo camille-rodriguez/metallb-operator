@@ -71,10 +71,13 @@ class MetalLBControllerCharm(CharmBase):
                                                  "Kubernetes objects")
             utils.create_k8s_objects(self._stored.namespace)
             self._stored.k8s_objects_created = True
-
+        
         self.unit.status = MaintenanceStatus("Configuring pod")
-        self.set_pod_spec(image_info)
-
+        self._set_configmap()
+        # Get the controller container so we can configure/manipulate it # Are we doing anything with it ?
+        container = self.unit.get_container("metallb-controller")
+        # Create a new config layer
+        layer = self._controller_layer()
         self.unit.status = ActiveStatus()
         self._stored.started = True
 
@@ -103,88 +106,110 @@ class MetalLBControllerCharm(CharmBase):
         self._stored.started = False
         self._stored.k8s_objects_created = False
 
-    def set_pod_spec(self, image_info):
-        """Set pod spec."""
-        iprange = self.model.config["iprange"].split(",")
-        cm = "address-pools:\n- name: default\n  protocol: layer2\n  addresses:\n"
-        for range in iprange:
-            cm += "  - " + range + "\n"
-
-        self.model.pod.set_spec(
-            {
-                'version': 3,
-                'serviceAccount': {
-                    'roles': [{
-                        'global': True,
-                        'rules': [
-                            {
-                                'apiGroups': [''],
-                                'resources': ['services'],
-                                'verbs': ['get', 'list', 'watch', 'update'],
-                            },
-                            {
-                                'apiGroups': [''],
-                                'resources': ['services/status'],
-                                'verbs': ['update'],
-                            },
-                            {
-                                'apiGroups': [''],
-                                'resources': ['events'],
-                                'verbs': ['create', 'patch'],
-                            },
-                            {
-                                'apiGroups': ['policy'],
-                                'resourceNames': ['controller'],
-                                'resources': ['podsecuritypolicies'],
-                                'verbs': ['use'],
-                            },
-                        ],
-                    }],
-                },
-                'containers': [{
-                    'name': 'controller',
-                    'imageDetails': image_info,
-                    'imagePullPolicy': 'Always',
-                    'ports': [{
-                        'containerPort': 7472,
-                        'protocol': 'TCP',
-                        'name': 'monitoring'
-                    }],
-                    # TODO: add constraint fields once it exists in pod_spec
-                    # bug : https://bugs.launchpad.net/juju/+bug/1893123
-                    # 'resources': {
-                    #     'limits': {
-                    #         'cpu': '100m',
-                    #         'memory': '100Mi',
-                    #     }
-                    # },
-                    'kubernetes': {
-                        'securityContext': {
-                            'privileged': False,
-                            'runAsNonRoot': True,
-                            'runAsUser': 65534,
-                            'readOnlyRootFilesystem': True,
-                            'capabilities': {
-                                'drop': ['ALL']
-                            }
-                        },
-                        # fields do not exist in pod_spec
-                        # 'TerminationGracePeriodSeconds': 0,
-                    },
-                }],
-                'service': {
-                    'annotations': {
-                        'prometheus.io/port': '7472',
-                        'prometheus.io/scrape': 'true'
-                    }
-                },
-                'configMaps': {
-                    'config': {
-                        'config': cm
-                    }
+    def _controller_layer(self):
+        """Returns a Pebble configration layer for MetalLB Controller"""
+        return {
+            "summary": "metallb controller layer",
+            "description": "pebble confid layer for metallb controller",
+            "services": {
+                "controller": {
+                    "summary": "controller",
+                    "startup": "enabled",
                 }
-            },
-        )
+            }
+        }
+
+    def _set_configmap(self):
+        CONFIG_MAP_NAME = 'config'
+        iprange = self.model.config["iprange"].split(",")
+        iprange_map = "address-pools:\n- name: default\n  protocol: layer2\n  addresses:\n"
+        for range in iprange:
+            iprange_map += "  - " + range + "\n"
+
+        utils.set_config_map(CONFIG_MAP_NAME, self._stored.namespace, iprange_map)
+
+    # def set_pod_spec(self, image_info):
+    #     """Set pod spec."""
+    #     iprange = self.model.config["iprange"].split(",")
+    #     cm = "address-pools:\n- name: default\n  protocol: layer2\n  addresses:\n"
+    #     for range in iprange:
+    #         cm += "  - " + range + "\n"
+
+    #     self.model.pod.set_spec(
+    #         {
+    #             'version': 3,
+    #             'serviceAccount': {
+    #                 'roles': [{
+    #                     'global': True,
+    #                     'rules': [
+    #                         {
+    #                             'apiGroups': [''],
+    #                             'resources': ['services'],
+    #                             'verbs': ['get', 'list', 'watch', 'update'],
+    #                         },
+    #                         {
+    #                             'apiGroups': [''],
+    #                             'resources': ['services/status'],
+    #                             'verbs': ['update'],
+    #                         },
+    #                         {
+    #                             'apiGroups': [''],
+    #                             'resources': ['events'],
+    #                             'verbs': ['create', 'patch'],
+    #                         },
+    #                         {
+    #                             'apiGroups': ['policy'],
+    #                             'resourceNames': ['controller'],
+    #                             'resources': ['podsecuritypolicies'],
+    #                             'verbs': ['use'],
+    #                         },
+    #                     ],
+    #                 }],
+    #             },
+    #             'containers': [{
+    #                 'name': 'controller',
+    #                 'imageDetails': image_info,
+    #                 'imagePullPolicy': 'Always',
+    #                 'ports': [{
+    #                     'containerPort': 7472,
+    #                     'protocol': 'TCP',
+    #                     'name': 'monitoring'
+    #                 }],
+    #                 # TODO: add constraint fields once it exists in pod_spec
+    #                 # bug : https://bugs.launchpad.net/juju/+bug/1893123
+    #                 # 'resources': {
+    #                 #     'limits': {
+    #                 #         'cpu': '100m',
+    #                 #         'memory': '100Mi',
+    #                 #     }
+    #                 # },
+    #                 'kubernetes': {
+    #                     'securityContext': {
+    #                         'privileged': False,
+    #                         'runAsNonRoot': True,
+    #                         'runAsUser': 65534,
+    #                         'readOnlyRootFilesystem': True,
+    #                         'capabilities': {
+    #                             'drop': ['ALL']
+    #                         }
+    #                     },
+    #                     # fields do not exist in pod_spec
+    #                     # 'TerminationGracePeriodSeconds': 0,
+    #                 },
+    #             }],
+    #             'service': {
+    #                 'annotations': {
+    #                     'prometheus.io/port': '7472',
+    #                     'prometheus.io/scrape': 'true'
+    #                 }
+    #             },
+    #             'configMaps': {
+    #                 'config': {
+    #                     'config': cm
+    #                 }
+    #             }
+    #         },
+    #     )
 
 
 if __name__ == "__main__":

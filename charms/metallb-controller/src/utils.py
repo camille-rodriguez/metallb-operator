@@ -5,7 +5,7 @@ import os
 import random
 import string
 
-from kubernetes import client, config
+from kubernetes import client
 from kubernetes.client.rest import ApiException
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,6 @@ def create_pod_security_policy_with_api(namespace):
     """Create pod security policy."""
     # Using the API because of LP:1886694
     logging.info('Creating pod security policy with K8s API')
-    _load_kube_config()
 
     metadata = client.V1ObjectMeta(
         namespace=namespace,
@@ -98,7 +97,6 @@ def create_pod_security_policy_with_api(namespace):
 def delete_pod_security_policy_with_api(name):
     """Delete pod security policy."""
     logging.info('Deleting pod security policy named "controller" with K8s API')
-    _load_kube_config()
 
     body = client.V1DeleteOptions()
     with client.ApiClient() as api_client:
@@ -115,7 +113,6 @@ def create_namespaced_role_with_api(name, namespace, labels, resources, verbs,
     """Create namespaced role."""
     # Using API because of bug https://bugs.launchpad.net/juju/+bug/1896076
     logging.info('Creating namespaced role with K8s API')
-    _load_kube_config()
 
     body = client.V1Role(
         metadata=client.V1ObjectMeta(
@@ -145,7 +142,6 @@ def create_namespaced_role_with_api(name, namespace, labels, resources, verbs,
 def delete_namespaced_role_with_api(name, namespace):
     """Delete namespaced role."""
     logging.info('Deleting namespaced role with K8s API')
-    _load_kube_config()
 
     body = client.V1DeleteOptions()
     with client.ApiClient() as api_client:
@@ -167,7 +163,6 @@ def create_namespaced_role_binding_with_api(name, namespace, labels, subject_nam
     """Bind namespaced role to subject."""
     # Using API because of bug https://bugs.launchpad.net/juju/+bug/1896076
     logging.info('Creating role binding with K8s API')
-    _load_kube_config()
 
     body = client.V1RoleBinding(
         metadata=client.V1ObjectMeta(
@@ -203,7 +198,6 @@ def create_namespaced_role_binding_with_api(name, namespace, labels, subject_nam
 def delete_namespaced_role_binding_with_api(name, namespace):
     """Delete namespaced role binding with K8s API."""
     logging.info('Deleting namespaced role binding with API')
-    _load_kube_config()
 
     body = client.V1DeleteOptions()
     with client.ApiClient() as api_client:
@@ -222,7 +216,6 @@ def delete_namespaced_role_binding_with_api(name, namespace):
 def create_config_map(name, namespace, iprange_map):
     """Create the metallb controller config map with K8s API"""
     logging.info('Creating config map with K8s API')
-    _load_kube_config()
 
     body = client.V1ConfigMap(
         metadata=client.V1ObjectMeta(
@@ -242,7 +235,6 @@ def create_config_map(name, namespace, iprange_map):
 def patch_config_map(name, namespace, iprange_map):
     """Update the metallb controller config map with K8s API"""
     logging.info('Updating config map with K8s API')
-    _load_kube_config()
 
     body = client.V1ConfigMap(
         metadata=client.V1ObjectMeta(
@@ -263,7 +255,6 @@ def patch_config_map(name, namespace, iprange_map):
 def set_config_map(name, namespace, iprange_map):
     """Check if config map exists and runs either create or patch depending on status."""
     logging.info('Listing config maps...')
-    _load_kube_config()
     patched = False
     with client.ApiClient() as api_client:
         api_instance = client.CoreV1Api(api_client)
@@ -285,17 +276,3 @@ def _random_secret(length):
     letters = string.ascii_letters
     result_str = ''.join(random.SystemRandom().choice(letters) for i in range(length))
     return result_str
-
-
-def _load_kube_config():
-    # TODO: Remove this workaround when bug LP:1892255 is fixed
-    from pathlib import Path
-    os.environ.update(
-        dict(
-            e.split("=")
-            for e in Path("/proc/1/environ").read_text().split("\x00")
-            if "KUBERNETES_SERVICE" in e
-        )
-    )
-    # end workaround
-    config.load_incluster_config()

@@ -8,6 +8,7 @@ from hashlib import md5
 
 from oci_image import OCIImageResource, OCIImageResourceError
 
+from kubernetes import client, config
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
@@ -27,6 +28,7 @@ class MetalLBControllerCharm(CharmBase):
     """MetalLB Controller Charm."""
 
     _stored = StoredState()
+    _authed = False
 
     def __init__(self, *args):
         """Charm initialization for events observation."""
@@ -58,6 +60,9 @@ class MetalLBControllerCharm(CharmBase):
         """Occurs upon install, start, upgrade, and possibly config changed."""
         if self._stored.started:
             return
+        if not self._k8s_auth():
+            event.defer()
+            return
         self.unit.status = MaintenanceStatus("Fetching image information")
         try:
             image_info = self.image.fetch()
@@ -83,10 +88,17 @@ class MetalLBControllerCharm(CharmBase):
 
     def _on_upgrade(self, event):
         """Occurs when new charm code or image info is available."""
+        if not self._k8s_auth():
+            event.defer()
+            return
         self._stored.started = False
         self._on_start(event)
 
     def _on_config_changed(self, event):
+        """Handles changes in the IP range or protocol configuration"""
+        if not self._k8s_auth():
+            event.defer()
+            return
         if self.model.config['protocol'] != 'layer2':
             self.unit.status = BlockedStatus('Invalid protocol; '
                                              'only "layer2" currently supported')
@@ -99,6 +111,9 @@ class MetalLBControllerCharm(CharmBase):
 
     def _on_remove(self, event):
         """Remove of artifacts created by the K8s API."""
+        if not self._k8s_auth():
+            event.defer()
+            return
         self.unit.status = MaintenanceStatus("Removing supplementary "
                                              "Kubernetes objects")
         utils.remove_k8s_objects(self._stored.namespace)
@@ -127,6 +142,39 @@ class MetalLBControllerCharm(CharmBase):
             iprange_map += "  - " + range + "\n"
 
         utils.set_config_map(CONFIG_MAP_NAME, self._stored.namespace, iprange_map)
+    
+    def _k8s_auth(self):
+        """Authenticate to Kubernetes"""
+        if self._authed:
+            return True
+        # TODO: Remove this workaround when bug LP:1892255 is fixed
+        from pathlib import Path
+        os.environ.update(
+            dict(
+                e.split("=")
+                for e in Path("/proc/1/environ").read_text().split("\x00")
+                if "KUBERNETES_SERVICE" in e
+            )
+        )
+        # end workaround
+        # Authenticate against the Kubernetes API using a mounted ServiceAccount token
+        config.load_incluster_config()
+        # Test the service account we've got for sufficient perms
+        auth_api = client.RbacAuthorizationV1Api(client.ApiClient())
+
+        try:
+            auth_api.list_cluster_role()
+        except client.rest.ApiException as e:
+            logging.debug(e)
+            print(e)
+            if e.status == 401:
+                # If we can't read a cluster role, we don't have enough permissions
+                self.unit.status = BlockedStatus("Run juju trust on this application to continue")
+                return False
+            else:
+                raise e
+        self._authed = True
+        return True
 
 if __name__ == "__main__":
     main(MetalLBControllerCharm)

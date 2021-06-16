@@ -9,6 +9,7 @@ from hashlib import md5
 from oci_image import OCIImageResource, OCIImageResourceError
 
 from kubernetes import client, config
+from kubernetes.client.rest import ApiException
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
@@ -64,6 +65,7 @@ class MetalLBControllerCharm(CharmBase):
             event.defer()
             return
         self.unit.status = MaintenanceStatus("Fetching image information")
+        logging.info("Fetching OCI image information")
         try:
             image_info = self.image.fetch()
         except OCIImageResourceError:
@@ -74,6 +76,7 @@ class MetalLBControllerCharm(CharmBase):
         if not self._stored.k8s_objects_created:
             self.unit.status = MaintenanceStatus("Creating supplementary "
                                                  "Kubernetes objects")
+            logging.info("Creating Kubernetes objects with K8s API")
             utils.create_k8s_objects(self._stored.namespace)
             self._stored.k8s_objects_created = True
         
@@ -83,6 +86,9 @@ class MetalLBControllerCharm(CharmBase):
         container = self.unit.get_container("metallb-controller")
         # Create a new config layer
         layer = self._controller_layer()
+
+        logging.debug('testing here patch stateful set')
+        self._patch_stateful_set()
         self.unit.status = ActiveStatus()
         self._stored.started = True
 
@@ -142,6 +148,33 @@ class MetalLBControllerCharm(CharmBase):
             iprange_map += "  - " + range + "\n"
 
         utils.set_config_map(CONFIG_MAP_NAME, self._stored.namespace, iprange_map)
+
+    def _patch_stateful_set(self) -> None:
+        """Patch the StatefulSet created by Juju"""
+        self.unit.status = MaintenanceStatus("Patching StatefulSet for additional k8s config")
+        # Get an API client
+        api = client.AppsV1Api(client.ApiClient())
+        # Read the StatefulSet we're deployed into
+        name = "metallb-controller"
+        namespace = self.model.name
+        statefulset_body = api.read_namespaced_stateful_set(name=name, namespace=namespace)
+        logging.debug(statefulset_body)
+        # Config missing annotations
+        statefulset_body.metadata.annotations['prometheus.io/port'] = '7472'
+        statefulset_body.metadata.annotations['prometheus.io/scrape'] = 'true'
+        # Config changes to the ports exposed
+        ports = [client.V1ContainerPort(container_port = 7472, name = 'monitoring')]
+        for container in statefulset_body.spec.template.spec.containers:
+            if container.name == 'metallb-controller':
+                container.ports = ports
+        with client.ApiClient() as api_client:
+            api_instance = client.AppsV1Api(api_client)
+            try:
+                logging.debug(statefulset_body)
+                api_response = api_instance.patch_namespaced_stateful_set(name, namespace, body=statefulset_body, pretty=True)
+                logging.debug(api_response)
+            except ApiException as err:
+                    raise
     
     def _k8s_auth(self):
         """Authenticate to Kubernetes"""

@@ -159,7 +159,7 @@ class MetalLBControllerCharm(CharmBase):
         namespace = self.model.name
         statefulset_body = api.read_namespaced_stateful_set(name=name, namespace=namespace)
         logging.debug(statefulset_body)
-        # Config missing annotations
+        # Config missing annotations - WIP, doens't seem to work yet
         statefulset_body.metadata.annotations['prometheus.io/port'] = '7472'
         statefulset_body.metadata.annotations['prometheus.io/scrape'] = 'true'
         # Config changes to the ports exposed
